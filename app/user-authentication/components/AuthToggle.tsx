@@ -1,7 +1,4 @@
 'use client';
-
-
-
 interface AuthToggleProps {
   activeMode: 'login' | 'signup';
   onModeChange: (mode: 'login' | 'signup') => void;

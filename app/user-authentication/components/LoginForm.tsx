@@ -45,6 +45,8 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      console.log('Form submitted');
+      localStorage.setItem('person', JSON.stringify({ email }));
       onSubmit(email, password, rememberMe);
     }
   };
@@ -59,7 +61,7 @@ export default function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
           <input
             id="login-email"
             type="email"
-            value={email}
+            value={rememberMe ? localStorage.getItem('person') ? JSON.parse(localStorage.getItem('person') as string).email : '' : email}
             onChange={(e) => {
               setEmail(e.target.value);
               if (errors.email) setErrors({ ...errors, email: undefined });

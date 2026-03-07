@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Icon from "@/components/ui/Appicon";
+import Icon from '@/components/ui/AppIcon';
 import AuthToggle from './AuthToggle';
 import LoginForm from './LoginForm';
 import SignupForm from './SignupForm';
@@ -14,33 +14,64 @@ export default function AuthenticationInteractive() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   const handleLogin = async (email: string, password: string, rememberMe: boolean) => {
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    setAuthError('');
+
+    try {
+      const response = await fetch('/api/credentials/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || data?.message || 'Signin failed');
+      }
       setShowSuccess(true);
-      
       setTimeout(() => {
         router.push('/all-forms-dashboard');
       }, 1500);
-    }, 2000);
-  };
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Something went wrong while Signing in');
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSignup = async (name: string, email: string, password: string) => {
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    setAuthError('');
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || data?.message || 'Signup failed');
+      }
+
       setShowSuccess(true);
-      
       setTimeout(() => {
         router.push('/all-forms-dashboard');
       }, 1500);
-    }, 2000);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Something went wrong while signing up');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,7 +94,7 @@ export default function AuthenticationInteractive() {
                 {mode === 'login' ? 'Welcome back!' : 'Account created!'}
               </h3>
               <p className="text-sm text-text-secondary">
-                {mode === 'login' ?'Redirecting to your dashboard...' :'Redirecting to get you started...'}
+                {mode === 'login' ? 'Redirecting to your dashboard...' : 'Redirecting to get you started...'}
               </p>
             </div>
           </div>
@@ -74,21 +105,21 @@ export default function AuthenticationInteractive() {
       <div className="relative w-full max-w-md">
         {/* Logo and back link */}
         <div className="text-center mb-8">
-          <Link 
+          <Link
             href="/marketing-landing-page"
             className="inline-flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-smooth mb-6"
           >
             <Icon name="ArrowLeftIcon" size={16} />
             <span>Back to home</span>
           </Link>
-          
+
           <Link href="/marketing-landing-page" className="inline-flex items-center justify-center gap-2 mb-2">
             <div className="flex items-center justify-center w-12 h-12 bg-primary rounded-xl">
               <Icon name="DocumentTextIcon" size={24} className="text-primary-foreground" variant="solid" />
             </div>
             <span className="text-2xl font-bold text-text-primary">FormCraft</span>
           </Link>
-          
+
           <p className="text-sm text-text-secondary mt-2">
             Build professional forms in minutes ✨
           </p>
@@ -109,6 +140,10 @@ export default function AuthenticationInteractive() {
               <SignupForm onSubmit={handleSignup} isLoading={isLoading} />
             )}
           </div>
+
+          {authError && (
+            <p className="mb-6 text-sm text-error">{authError}</p>
+          )}
 
           {/* Social auth */}
           <SocialAuthButtons mode={mode} />

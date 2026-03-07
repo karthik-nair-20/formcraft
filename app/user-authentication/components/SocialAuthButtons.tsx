@@ -1,5 +1,6 @@
 'use client';
 
+import { signIn } from 'next-auth/react';
 import Icon from '@/components/ui/AppIcon';
 
 interface SocialAuthButtonsProps {
@@ -8,11 +9,11 @@ interface SocialAuthButtonsProps {
 
 export default function SocialAuthButtons({ mode }: SocialAuthButtonsProps) {
   const handleGoogleAuth = () => {
-    console.log('Google authentication initiated');
+    signIn('google', { callbackUrl: '/all-forms-dashboard' });
   };
 
   const handleGitHubAuth = () => {
-    console.log('GitHub authentication initiated');
+    signIn('github', { callbackUrl: '/all-forms-dashboard' });
   };
 
   return (
